@@ -3,24 +3,25 @@ package main
 import (
 	"fmt"
 	"io/ioutil"
+	"log"
 )
 
 func main() {
-	fmt.Printf("problem 1: %d\n", p1())
-	fmt.Printf("problem 2: %d\n", p2())
+	b, err := ioutil.ReadFile("input.txt")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	fmt.Printf("Solution 1: %d\n", p1(b))
+	fmt.Printf("Solution 2: %d\n", p2(b))
 }
 
-func p1() int {
-
-	f, err := ioutil.ReadFile("input.txt")
-	if err != nil {
-		panic(err.Error())
-	}
+func p1(b []byte) int {
 
 	floor := 0
 
-	for _, v := range string(f) {
-		switch v {
+	for _, r := range string(b) {
+		switch r {
 		case '(':
 			floor++
 		case ')':
@@ -31,18 +32,13 @@ func p1() int {
 	return floor
 }
 
-func p2() int {
-
-	f, err := ioutil.ReadFile("input.txt")
-	if err != nil {
-		panic(err.Error())
-	}
+func p2(b []byte) int {
 
 	floor := 0
 	basement := 0
 
-	for i, v := range string(f) {
-		switch v {
+	for i, r := range string(b) {
+		switch r {
 		case '(':
 			floor++
 		case ')':

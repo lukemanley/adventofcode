@@ -3,81 +3,78 @@ package main
 import (
 	"bufio"
 	"fmt"
+	"log"
 	"os"
 	"strings"
 )
 
 func main() {
-
-	file, err := os.Open("input.txt")
+	f, err := os.Open("input.txt")
 	if err != nil {
-		panic(err.Error())
+		log.Fatal(err)
 	}
-	defer file.Close()
+	defer f.Close()
 
-	reader := bufio.NewReader(file)
-	scanner := bufio.NewScanner(reader)
+	s := bufio.NewScanner(f)
 
-	scanner.Split(bufio.ScanLines)
+	var lines []string
+	for s.Scan() {
+		lines = append(lines, s.Text())
+	}
 
+	fmt.Println("Solution 1:", p1(lines))
+	fmt.Println("Solution 2:", p2(lines))
+}
+
+func p1(lines []string) int {
 	count := 0
-	count2 := 0
+	for _, line := range lines {
+		if !repeats(line) {
+			continue
+		}
+		if !strings.Contains(line, "ab") && !strings.Contains(line, "cd") && !strings.Contains(line, "pq") && !strings.Contains(line, "xy") {
+			vowels := 0
+			for _, r := range "aeiou" {
+				vowels += strings.Count(line, string(r))
+			}
+			if vowels > 2 {
+				count++
+			}
+		}
+	}
+	return count
+}
 
-	for scanner.Scan() {
-
-		line := scanner.Text()
-
-		var r2 rune
-		var r3 rune
-
+func p2(lines []string) int {
+	count := 0
+	for _, line := range lines {
+		pair := false
 		repeat := false
 		for i, r := range line {
-
-			if i > 0 && !repeat && r == r2 {
-				repeat = true
-			}
-			r2 = r
-
-		}
-		if repeat {
-
-			if !strings.Contains(line, "ab") && !strings.Contains(line, "cd") && !strings.Contains(line, "pq") && !strings.Contains(line, "xy") {
-
-				vowels := 0
-				vowels += strings.Count(line, "a")
-				vowels += strings.Count(line, "e")
-				vowels += strings.Count(line, "i")
-				vowels += strings.Count(line, "o")
-				vowels += strings.Count(line, "u")
-				if vowels > 2 {
-					count++
-				}
-			}
-		}
-
-		pair := false
-		repeat = false
-
-		for i, r := range line {
 			if i > 0 && !pair {
-				s := strings.Split(line, fmt.Sprint(string(r2), string(r)))
+				s := strings.Split(line, fmt.Sprintf("%c%c", line[i-1], r))
 				if len(s) > 2 {
 					pair = true
 				}
 			}
 			if i > 1 && !repeat {
-				if r == r3 {
+				if r == rune(line[i-2]) {
 					repeat = true
 				}
 			}
-			r3 = r2
-			r2 = r
 		}
 		if pair && repeat {
-			count2++
+			count++
 		}
 	}
-	fmt.Println("nice string count1:", count)
-	fmt.Println("nice string count2:", count2)
+	return count
+}
 
+func repeats(s string) bool {
+	for i, r := range s[1:] {
+		if r == rune(s[i]) {
+			return true
+		}
+	}
+	return false
 }

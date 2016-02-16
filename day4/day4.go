@@ -8,25 +8,28 @@ import (
 )
 
 func main() {
+
 	input := []byte("iwrupvqb")
 
-	fiveFound := false
+	pre := "00000"
+	i := 1
 
-	for i := 1; ; i++ {
-		s := strconv.Itoa(i)
-		b := append(input, []byte(s)...)
+	for {
+		b := append(input, []byte(strconv.Itoa(i))...)
 		h := md5.Sum(b)
 		s2 := fmt.Sprintf("%x", h)
 
-		if strings.HasPrefix(s2, "00000") {
-			if !fiveFound {
-				fmt.Println("5 zeros:", i)
-				fiveFound = true
-			}
-			if strings.HasPrefix(s2, "000000") {
-				fmt.Println("6 zeros:", i)
+		if strings.HasPrefix(s2, pre) {
+			switch pre {
+			case "00000":
+				fmt.Println("Solution 1:", i)
+				pre = "000000"
+				continue
+			case "000000":
+				fmt.Println("Solution 2:", i)
 				return
 			}
 		}
+		i++
 	}
 }
