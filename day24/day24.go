@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"sort"
 	"strconv"
 )
 
@@ -31,6 +32,8 @@ func main() {
 	for _, w := range weights {
 		total += w
 	}
+
+	sort.Sort(sort.Reverse(sort.IntSlice(weights)))
 
 	reserved := make(map[int]bool)
 	_, minprod1 := solve(weights, reserved, 0, 0, 0, 1, total/3, len(weights)/3)
@@ -61,8 +64,10 @@ func solve(weights []int, reserved map[int]bool, start, sum, count, prod, target
 		mincount2, minprod2 := solve(weights, reserved, start+i+1, sum+w, count+1, prod*w, target, maxcount)
 
 		balanced := false
-		if mincount2 > 0 {
-			balanced = balances(weights, reserved, 0, target)
+		if mincount2 != -1 {
+			if mincount == -1 || mincount2 <= mincount {
+				balanced = balances(weights, reserved, 0, target)
+			}
 		}
 
 		delete(reserved, start+i)
@@ -70,19 +75,16 @@ func solve(weights []int, reserved map[int]bool, start, sum, count, prod, target
 		if !balanced {
 			continue
 		}
-
 		if mincount == -1 || mincount2 < mincount {
 			mincount = mincount2
 			minprod = minprod2
 			continue
 		}
-
 		if mincount2 == mincount {
 			if minprod2 < minprod {
 				minprod = minprod2
 			}
 		}
-
 	}
 	return mincount, minprod
 }
