@@ -7,10 +7,14 @@ import (
 	"os"
 	"regexp"
 	"strconv"
-	"strings"
 )
 
 var re = regexp.MustCompile(`(\w+) would (\w+) (\d+) happiness units by sitting next to (\w+).`)
+
+type seat struct {
+	a string
+	b string
+}
 
 func main() {
 	f, err := os.Open("input.txt")
@@ -19,15 +23,14 @@ func main() {
 	}
 	defer f.Close()
 
-	m := make(map[string]int)
-	peopleset := make(map[string]bool)
+	var people []string
+	happiness := make(map[seat]int)
 
 	s := bufio.NewScanner(f)
 
 	for s.Scan() {
 		match := re.FindStringSubmatch(s.Text())
-		peopleset[match[1]] = true
-		k := match[1] + "_" + match[4]
+
 		v, err := strconv.Atoi(match[3])
 		if err != nil {
 			log.Fatal(err)
@@ -35,103 +38,94 @@ func main() {
 		if match[2] == "lose" {
 			v = -v
 		}
-		m[k] = v
+
+		if !containsString(people, match[1]) {
+			people = append(people, match[1])
+		}
+		happiness[seat{match[1], match[4]}] = v
 	}
 
-	options := make(map[string]bool)
+	seated := make([]int, len(people), len(people))
+	fmt.Println("Solution 1:", best(happiness, people, seated, 0, 0))
+	fmt.Println("Solution 2:", best2(happiness, people, seated, 0, 0))
 
-	toAssign := ""
-	for name, _ := range peopleset {
-		if toAssign != "" {
-			toAssign += "_"
-		}
-		toAssign += name
-	}
-
-	assignSeats(options, "", toAssign)
-
-	max := 0
-	max2 := 0
-
-	for opt, _ := range options {
-		optTotal := 0
-		minLink := 0
-		sli := strings.Split(opt, "_")
-		for i, name := range sli {
-			left := ""
-			right := ""
-			if i == 0 {
-				left = sli[len(sli)-1]
-			} else {
-				left = sli[i-1]
-			}
-			if i == len(sli)-1 {
-				right = sli[0]
-			} else {
-				right = sli[i+1]
-			}
-			h1, ok := m[name+"_"+left]
-			if !ok {
-				panic("utility not found: " + name + " " + left)
-			}
-			h2, ok := m[name+"_"+right]
-			if !ok {
-				panic("utility not found: " + name + " " + right)
-			}
-			optTotal += h1 + h2
-
-			h1b, ok := m[left+"_"+name]
-			if !ok {
-				panic("utility no found")
-			}
-			h2b, ok := m[right+"_"+name]
-			if !ok {
-				panic("utility not found")
-			}
-
-			if i == 0 || h1+h1b < minLink {
-				minLink = h1 + h1b
-			}
-
-			if h2+h2b < minLink {
-				minLink = h2 + h2b
-			}
-		}
-		if optTotal > max {
-			max = optTotal
-		}
-		if optTotal-minLink > max2 {
-			max2 = optTotal - minLink
-		}
-	}
-	fmt.Println(max)
-	fmt.Println(max2)
 }
 
-func assignSeats(options map[string]bool, assigned, toAssign string) {
-	if toAssign == "" {
-		options[assigned] = true
-		return
+func best(happiness map[seat]int, people []string, seated []int, i, max int) int {
+
+	if i == len(people) {
+		h := 0
+		b := people[seated[i-1]]
+		for _, j := range seated {
+			a := people[j]
+			h += happiness[seat{a, b}]
+			h += happiness[seat{b, a}]
+			b = a
+		}
+		if h > max {
+			max = h
+		}
+		return max
 	}
-	for _, name := range strings.Split(toAssign, "_") {
-		assignSeats(options, setAdd(assigned, name), setRemove(toAssign, name))
+
+	for j := 0; j < len(people); j++ {
+		if containsInt(seated[:i], j) {
+			continue
+		}
+		seated[i] = j
+		max = best(happiness, people, seated, i+1, max)
 	}
-	return
+	return max
 }
 
-func setAdd(s, s2 string) string {
-	if s == "" {
-		return s2
+func best2(happiness map[seat]int, people []string, seated []int, i, max int) int {
+
+	if i == len(people) {
+		h := 0
+		min := 0
+		minset := false
+		b := people[seated[i-1]]
+		for _, j := range seated {
+			a := people[j]
+			h2 := happiness[seat{a, b}] + happiness[seat{b, a}]
+			if !minset || h2 < min {
+				min = h2
+				minset = true
+			}
+			h += h2
+			b = a
+		}
+		h -= min
+		if h > max {
+			max = h
+		}
+		return max
 	}
-	return s + "_" + s2
+
+	for j := 0; j < len(people); j++ {
+		if containsInt(seated[:i], j) {
+			continue
+		}
+		seated[i] = j
+		max = best2(happiness, people, seated, i+1, max)
+	}
+	return max
 }
 
-func setRemove(s, r string) string {
-	if s == r {
-		return ""
+func containsInt(sli []int, i int) bool {
+	for _, j := range sli {
+		if i == j {
+			return true
+		}
 	}
-	if strings.HasPrefix(s, r) {
-		return strings.Replace(s, r+"_", "", 1)
+	return false
+}
+
+func containsString(sli []string, s string) bool {
+	for _, s2 := range sli {
+		if s == s2 {
+			return true
+		}
 	}
-	return strings.Replace(s, "_"+r, "", 1)
+	return false
 }

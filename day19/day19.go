@@ -32,6 +32,7 @@ func main() {
 		if line == "" {
 			s.Scan()
 			molecule = s.Text()
+			break
 		}
 
 		tf := transform{}
@@ -47,7 +48,6 @@ func main() {
 }
 
 func p1(s string, transforms []*transform, ms map[string]bool) int {
-
 	for _, tf := range transforms {
 		sli := strings.Split(s, tf.old)
 		for i, _ := range sli {
@@ -70,7 +70,6 @@ func p1(s string, transforms []*transform, ms map[string]bool) int {
 			ms[newstr] = true
 		}
 	}
-
 	return len(ms)
 }
 

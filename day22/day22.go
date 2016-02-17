@@ -61,8 +61,8 @@ func main() {
 	}
 	cast := make(map[string]int)
 
-	fmt.Println("solution 1:", p1(p, b, s, cast, 0, false))
-	fmt.Println("solution 2:", p1(p, b, s, cast, 0, true))
+	fmt.Println("Solution 1:", p1(p, b, s, cast, 0, false))
+	fmt.Println("Solution 2:", p1(p, b, s, cast, 0, true))
 }
 
 func p1(p person, b person, s map[string]*spell, cast map[string]int, spent int, hard bool) int {

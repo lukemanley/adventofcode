@@ -16,15 +16,11 @@ func main() {
 	defer f.Close()
 
 	s := bufio.NewScanner(f)
-	s.Split(bufio.ScanLines)
-
 	var lights [10000]int
-
 	i := 0
 
 	for s.Scan() {
-		line := s.Text()
-		for _, r := range line {
+		for _, r := range s.Text() {
 			switch r {
 			case '#':
 				lights[i] = 1
@@ -37,11 +33,11 @@ func main() {
 		}
 	}
 
-	p1(lights)
-	p2(lights)
+	fmt.Println("Solution 1:", p1(lights))
+	fmt.Println("Solution 2:", p2(lights))
 }
 
-func p1(lights [10000]int) {
+func p1(lights [10000]int) int {
 	for n := 0; n < 100; n++ {
 		lights = step(lights[:])
 	}
@@ -50,10 +46,10 @@ func p1(lights [10000]int) {
 	for _, v := range lights {
 		sum += v
 	}
-	fmt.Println("Solution1:", sum)
+	return sum
 }
 
-func p2(lights [10000]int) {
+func p2(lights [10000]int) int {
 	for n := 0; n < 100; n++ {
 		lights[0] = 1
 		lights[99] = 1
@@ -64,14 +60,13 @@ func p2(lights [10000]int) {
 		lights[99] = 1
 		lights[9900] = 1
 		lights[9999] = 1
-
 	}
 
 	sum := 0
 	for _, v := range lights {
 		sum += v
 	}
-	fmt.Println("Solution1:", sum)
+	return sum
 }
 
 func step(lights []int) [10000]int {

@@ -24,12 +24,13 @@ var m = map[string]int{
 	"perfumes":    1,
 }
 
-func main() {
-	p1()
-	p2()
+type sue struct {
+	num   int
+	items []string
+	vals  []int
 }
 
-func p1() {
+func main() {
 	f, err := os.Open("input.txt")
 	if err != nil {
 		log.Fatal(err)
@@ -37,48 +38,54 @@ func p1() {
 	defer f.Close()
 
 	s := bufio.NewScanner(f)
-	s.Split(bufio.ScanLines)
+
+	var sues []sue
 
 	for s.Scan() {
-		line := s.Text()
-		sli := re.FindStringSubmatch(line)
-		for i := 0; i < 3; i++ {
-			item := sli[2+i*2]
-			n, err := strconv.Atoi(sli[3+i*2])
+		sli := re.FindStringSubmatch(s.Text())
+
+		num, err := strconv.Atoi(sli[1])
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		sue2 := sue{num, nil, nil}
+
+		for i := 2; i < len(sli); i += 2 {
+			item := sli[i]
+			n, err := strconv.Atoi(sli[i+1])
 			if err != nil {
 				log.Fatal(err)
 			}
-			if m[item] != n {
+			sue2.items = append(sue2.items, item)
+			sue2.vals = append(sue2.vals, n)
+		}
+		sues = append(sues, sue2)
+	}
+
+	fmt.Println("Solution 1:", p1(sues))
+	fmt.Println("Solution 2:", p2(sues))
+}
+
+func p1(sues []sue) int {
+	for _, s := range sues {
+		for i, item := range s.items {
+			if m[item] != s.vals[i] {
 				break
 			}
-			if i == 2 {
-				fmt.Println("Solution 1:", sli[1])
+			if i == len(s.items)-1 {
+				return s.num
 			}
 		}
 	}
+	return -1
 }
 
-func p2() {
-	f, err := os.Open("input.txt")
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer f.Close()
-
-	s := bufio.NewScanner(f)
-	s.Split(bufio.ScanLines)
-
-	for s.Scan() {
-		line := s.Text()
-		sli := re.FindStringSubmatch(line)
-
+func p2(sues []sue) int {
+	for _, s := range sues {
 	loop:
-		for i := 0; i < 3; i++ {
-			item := sli[2+i*2]
-			n, err := strconv.Atoi(sli[3+i*2])
-			if err != nil {
-				log.Fatal(err)
-			}
+		for i, item := range s.items {
+			n := s.vals[i]
 			switch item {
 			case "cats", "trees":
 				if m[item] >= n {
@@ -93,9 +100,10 @@ func p2() {
 					break loop
 				}
 			}
-			if i == 2 {
-				fmt.Println("Solution 2:", sli[1])
+			if i == len(s.items)-1 {
+				return s.num
 			}
 		}
 	}
+	return -1
 }

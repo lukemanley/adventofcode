@@ -25,8 +25,8 @@ func main() {
 		instructions = append(instructions, s.Text())
 	}
 
-	fmt.Println("solution 1:", process(instructions, make(map[byte]int)))
-	fmt.Println("solution 2:", process(instructions, map[byte]int{'a': 1}))
+	fmt.Println("Solution 1:", process(instructions, make(map[byte]int)))
+	fmt.Println("Solution 2:", process(instructions, map[byte]int{'a': 1}))
 }
 
 func process(instructions []string, regs map[byte]int) int {

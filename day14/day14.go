@@ -3,46 +3,51 @@ package main
 import (
 	"bufio"
 	"fmt"
+	"log"
 	"os"
 	"regexp"
 	"strconv"
 )
 
-var re = regexp.MustCompile(`([A-Za-z]+) can fly ([0-9]+) km/s for ([0-9]+) seconds, but then must rest for ([0-9]+) seconds.`)
+var re = regexp.MustCompile(`\w+ can fly (\d+) km/s for (\d+) seconds, but then must rest for (\d+) seconds.`)
 
 func main() {
-	p1()
-	p2()
-}
-
-func p1() {
 	f, err := os.Open("input.txt")
 	if err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
 	defer f.Close()
 
 	s := bufio.NewScanner(f)
-	s.Split(bufio.ScanLines)
 
-	max := 0
+	var stats [][]int
 
 	for s.Scan() {
-		line := s.Text()
-		m := re.FindStringSubmatch(line)
+		m := re.FindStringSubmatch(s.Text())
 
-		speed, err := strconv.Atoi(m[2])
-		if err != nil {
-			panic(err)
+		ints := make([]int, 3, 3)
+		for i, str := range m[1:] {
+			v, err := strconv.Atoi(str)
+			if err != nil {
+				log.Fatal(err)
+			}
+			ints[i] = v
 		}
-		duration, err := strconv.Atoi(m[3])
-		if err != nil {
-			panic(err)
-		}
-		rest, err := strconv.Atoi(m[4])
-		if err != nil {
-			panic(err)
-		}
+		stats = append(stats, ints)
+	}
+
+	fmt.Println("Solution 1:", p1(stats))
+	fmt.Println("Solution 2:", p2(stats))
+}
+
+func p1(stats [][]int) int {
+	max := 0
+
+	for _, stats2 := range stats {
+
+		speed := stats2[0]
+		duration := stats2[1]
+		rest := stats2[2]
 
 		var d int = 2503 / (duration + rest)
 		var mod int = 2503 - d*(duration+rest)
@@ -59,62 +64,32 @@ func p1() {
 			max = dist
 		}
 	}
-	fmt.Println("Solution 1:", max)
+	return max
 }
 
-func p2() {
-	f, err := os.Open("input.txt")
-	if err != nil {
-		panic(err)
-	}
-	defer f.Close()
+func p2(stats [][]int) int {
 
-	s := bufio.NewScanner(f)
-	s.Split(bufio.ScanLines)
-
-	data := make(map[string][]int)
-
-	for s.Scan() {
-		line := s.Text()
-		m := re.FindStringSubmatch(line)
-
-		speed, err := strconv.Atoi(m[2])
-		if err != nil {
-			panic(err)
-		}
-		duration, err := strconv.Atoi(m[3])
-		if err != nil {
-			panic(err)
-		}
-		rest, err := strconv.Atoi(m[4])
-		if err != nil {
-			panic(err)
-		}
-
-		data[m[1]] = []int{speed, duration, rest}
-	}
-
-	dist := make(map[string]int)
-	points := make(map[string]int)
+	dist := make(map[int]int)
+	points := make(map[int]int)
 
 	for i := 0; i < 2503; i++ {
 		maxdist := 0
-		for name, stats := range data {
-			speed := stats[0]
-			duration := stats[1]
-			rest := stats[2]
+		for idx, stats2 := range stats {
+			speed := stats2[0]
+			duration := stats2[1]
+			rest := stats2[2]
 			var d int = i / (duration + rest)
 			var mod int = i - d*(duration+rest)
 			if mod < duration {
-				dist[name] += speed
+				dist[idx] += speed
 			}
-			if dist[name] > maxdist {
-				maxdist = dist[name]
+			if dist[idx] > maxdist {
+				maxdist = dist[idx]
 			}
 		}
-		for name, d := range dist {
+		for idx, d := range dist {
 			if d == maxdist {
-				points[name]++
+				points[idx]++
 			}
 		}
 	}
@@ -125,5 +100,5 @@ func p2() {
 			max = pts
 		}
 	}
-	fmt.Println("Solution 2:", max)
+	return max
 }

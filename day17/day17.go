@@ -16,7 +16,6 @@ func main() {
 	defer f.Close()
 
 	s := bufio.NewScanner(f)
-	s.Split(bufio.ScanLines)
 
 	var caps []int
 
@@ -34,9 +33,7 @@ func main() {
 
 	min := 0
 	for count, _ := range counts {
-		if min == 0 {
-			min = count
-		} else if count < min {
+		if min == 0 || count < min {
 			min = count
 		}
 	}

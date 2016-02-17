@@ -17,8 +17,6 @@ func main() {
 	defer f.Close()
 
 	s := bufio.NewScanner(f)
-	s.Split(bufio.ScanLines)
-
 	var weights []int
 
 	for s.Scan() {

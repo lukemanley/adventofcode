@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"fmt"
+	"log"
 	"os"
 )
 
@@ -18,20 +19,18 @@ type ingredient struct {
 func main() {
 	f, err := os.Open("input.txt")
 	if err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
 	defer f.Close()
 
 	s := bufio.NewScanner(f)
-	s.Split(bufio.ScanLines)
 
 	opt := make([]*ingredient, 0, 4)
 
 	for s.Scan() {
-		line := s.Text()
 		var i ingredient
 		opt = append(opt, &i)
-		fmt.Sscanf(line, "%s capacity %d, durability %d, flavor %d, texture %d, calories %d", &i.name, &i.capacity, &i.durability, &i.flavor, &i.texture, &i.calories)
+		fmt.Sscanf(s.Text(), "%s capacity %d, durability %d, flavor %d, texture %d, calories %d", &i.name, &i.capacity, &i.durability, &i.flavor, &i.texture, &i.calories)
 	}
 
 	maxscore := 0
